@@ -1,0 +1,2 @@
+create table tmpuser (id bigint, scrname varchar(30), nombre varchar(60), joined date, ccardno varchar(20), exp date);
+
