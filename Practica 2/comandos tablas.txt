@@ -1,2 +1,11 @@
 create table tmpuser (id bigint, scrname varchar(30), nombre varchar(60), joined date, ccardno varchar(20), exp date);
 
+En la terminal: chmod 777 /Downloads /Downloads/libreria
+
+copy tmpuser from '<ruta>' with delimiter '	';
+
+create table usuario (user_id bigint, sc_name varchar(30), nombre varchar(60), joined date, ccno bigint)
+
+create table ccard(ccno bigint, exp date)
+
+
