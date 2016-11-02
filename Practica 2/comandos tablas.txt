@@ -1,11 +1,58 @@
-create table tmpuser (id bigint, scrname varchar(30), nombre varchar(60), joined date, ccardno varchar(20), exp date);
+CREATE TABLE tmplibros
+(
+  autor character varying(300),
+  titulo character varying(300),
+  formato character varying(300),
+  numpag character varying(300),
+  editorial character varying(300),
+  pubdate date,
+  idioma character varying(300),
+  isbn character varying(300) NOT NULL
+);
 
-En la terminal: chmod 777 /Downloads /Downloads/libreria
+CREATE TABLE tmpprecio
+(
+  isbn character varying(300),
+  precio double precision
+);
 
-copy tmpuser from '<ruta>' with delimiter '	';
+CREATE TABLE tmpuser
+(
+  id bigint,
+  scrname character varying(30),
+  nombre character varying(60),
+  joined date,
+  ccardno character varying(20),
+  exp date
+);
 
-create table usuario (user_id bigint, sc_name varchar(30), nombre varchar(60), joined date, ccno bigint)
+CREATE TABLE tmpventas
+(
+	or_id bigint,
+	uid bigint,
+	isbn character varying(300),
+	fecha date
+)
 
-create table ccard(ccno bigint, exp date)
+copy tmpprecio from '/home/alumnos/e336056/EDAT/Practica 2/libreria/isbns_precios.txt' with delimiter '	' ENCODING 'ISO-8859-1';
 
+copy tmplibros from '/home/alumnos/e336056/EDAT/Practica 2/libreria/LIBROS_FINAL.txt' with delimiter '	' ENCODING 'ISO-8859-1';
 
+copy tmpuser from '/home/alumnos/e336056/EDAT/Practica 2/datos/usuarios.txt' with delimiter '	'ENCODING 'ISO-8859-1';
+
+copy tmpventas from '/home/alumnos/e336056/EDAT/Practica 2/libreria/ventas.txt' with delimiter '	' ENCODING 'ISO-8859-1';
+
+insert into ccard select distinct ccardno, exp from tmpuser
+
+insert into libro select distinct L.titulo, L.autor
+	from tmplibros as L
+
+insert into edicion select distinct L.titulo, L.formato, L.numpag, L.editorial, L.pubdate, L.idioma, L.isbn, P.precio
+	from tmplibros as L, tmpprecio as P
+	Where L.isbn = P.isb
+
+insert into fiduser SELECT distinct id, scrname, nombre, joined, ccardno from tmpuser
+
+insert into venta Select distinct or_id, uid, fecha from tmpventas
+
+insert into incluye select isbn, or_id from tmpventas
