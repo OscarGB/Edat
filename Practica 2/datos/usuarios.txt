@@ -1,4 +1,3 @@
-uid	scrname	full name	join date	ccard	expiration
 12	jack	Jack Dorsey	2006-03-21 21:50:14	7951193427772799	2020-4-27
 20	ev	Evan Williams	2006-03-21 22:02:31	9683756189318621	2019-5-25
 633	zephoria	danah boyd	2006-07-13 23:27:23	3349258749876911	2022-10-8
