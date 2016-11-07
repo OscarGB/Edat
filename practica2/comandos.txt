@@ -1,0 +1,28 @@
+chmod 777 EDAT EDAT/practica2 EDAT/practica2/libreria_buena
+----------------------------
+Rellenando tmplibros y tmpuser
+COPY tmplibros from '/home/alumnos/e340546/Desktop/EDAT/practica2/libreria_buena/LIBROS_FINAL.txt' WITH DELIMITER '	' ENCODING 'ISO-8859-1'
+COPY tmpuser from '/home/alumnos/e340546/Desktop/EDAT/practica2/libreria_buena/usuarios.txt' WITH DELIMITER '	' ENCODING 'ISO-8859-1'
+----------------------------
+
+-----------------------------
+Para rellenar la tabla de precios
+COPY tmpprecio2 from '/home/alumnos/e340546/Desktop/EDAT/practica2/libreria_buena/isbns_precios.txt' WITH DELIMITER '	' ENCODING 'ISO-8859-1' CSV FORCE NOT NULL precio
+update tmpprecio2 set precio=0 where precio = ''
+INSERT INTO tmpprecio (select isbn, cast(precio as double precision) from tmpprecio2 )
+-----------------------------
+
+-----------------------------
+Rellenar la tabla de ccard
+INSERT INTO ccard SELECT exp, ccardno FROM tmpuser
+-----------------------------
+
+-----------------------------
+Rellenar la tabla de fiduser
+INSERT INTO fiduser SELECT id, scrname, nombre, joined, FALSE,ccardno FROM tmpuser
+-----------------------------
+
+-----------------------------
+Rellenar la tabla Autor
+INSERT INTO "Autor" SELECT distinct(autor) FROM tmplibros
+-----------------------------
