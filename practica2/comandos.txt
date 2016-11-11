@@ -26,3 +26,61 @@ INSERT INTO fiduser SELECT id, scrname, nombre, joined, FALSE,ccardno FROM tmpus
 Rellenar la tabla Autor
 INSERT INTO "Autor" SELECT distinct(autor) FROM tmplibros
 -----------------------------
+
+-----------------------------
+Rellenar la tabla edicion
+
+insert into edicion
+select *
+from	(select ttl, fmt, cast(substring(npg from ' #"%#" %' for '#') as integer), edt, pbd, idm, isbn
+	from (select min(titulo) as ttl, min(formato) as fmt, min(numpag) as npg, min(editorial) as edt, min(pubdate) as pbd, min(idioma) as idm, isbn
+	from tmplibros
+	group by isbn) as T1
+	where T1.npg similar to '%(0|1|2|3|4|5|6|7|8|9)%') as T2
+	union
+	(select ttl, fmt, 100, edt, pbd, idm, isbn
+	from (select min(titulo) as ttl, min(formato) as fmt, min(numpag) as npg, min(editorial) as edt, min(pubdate) as pbd, min(idioma) as idm, isbn
+	from tmplibros
+	group by isbn) as T1
+	where not(T1.npg similar to '%(0|1|2|3|4|5|6|7|8|9)%'))
+
+-----------------------------
+
+-----------------------------
+Rellenar la tabla libro
+
+insert into libro
+select distinct(titulo)
+from tmplibros
+-----------------------------
+
+-----------------------------
+Rellenar la relación Escribe
+
+insert into "Escribe"
+select titulo, autor
+from tmplibros
+-----------------------------
+
+-----------------------------
+Rellenar la tabla tmpventas
+
+COPY tmpventas from '/home/alumnos/e340546/Desktop/EDAT/practica2/libreria_buena/ventas.txt' WITH DELIMITER '	' ENCODING 'ISO-8859-1'
+-----------------------------
+
+-----------------------------
+Rellenar la tabla ventas
+
+insert into ventas
+select pid, min(uid), min(fecha)
+from tmpventas
+group by pid
+-----------------------------
+
+-----------------------------
+Rellenar la relación incluye
+
+insert into incluye
+select isbn, pid
+from tmpventas
+-----------------------------
