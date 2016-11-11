@@ -56,3 +56,18 @@ insert into fiduser SELECT distinct id, scrname, nombre, joined, ccardno from tm
 insert into venta Select distinct or_id, uid, fecha from tmpventas
 
 insert into incluye select isbn, or_id from tmpventas
+
+
+
+(select cast(substring(npg from ' #"%#" %' for '#') as integer), isbn
+from (select min(titulo) as ttl, min(formato) as fmt, min(numpag) as npg, min(editorial) as edt, min(pubdate) as pbd, min(idioma) as idm, isbn
+from tmplibros
+group by isbn) as T1
+where T1.npg similar to '%(0|1|2|3|4|5|6|7|8|9)%')
+union
+(select 100, isbn
+from (select min(titulo) as ttl, min(formato) as fmt, min(numpag) as npg, min(editorial) as edt, min(pubdate) as pbd, min(idioma) as idm, isbn
+from tmplibros
+group by isbn) as T1
+where not(T1.npg similar to '%(0|1|2|3|4|5|6|7|8|9)%'))
+
