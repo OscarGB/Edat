@@ -3,6 +3,7 @@
 
 *.o
 usuario
+compra
 odbc-example1
 odbc-example2
 odbc-example3

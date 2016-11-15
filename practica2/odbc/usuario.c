@@ -123,7 +123,7 @@ int main(int argc, char *argv[]) {
   SQLHDBC dbc;
   SQLRETURN ret; /* ODBC API return status */
  
- 	if(argc < 2){
+ 	if(argc < 3){
   		printf("Please use the format:\n./usuario + <scrname> \"<fullname>\" <joinig date(YYYY-MM-DD)> <ccard number> <ccard expiration(YYYY-MM-DD)>\nor\n./usuario - <scrname>\n");
 		return EXIT_FAILURE;
   	}
