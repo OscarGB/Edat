@@ -1,2 +1,10 @@
 *~
 ~*
+
+*.o
+usuario
+odbc-example1
+odbc-example2
+odbc-example3
+odbc-example4
+odbc-test
