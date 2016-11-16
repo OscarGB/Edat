@@ -8,10 +8,9 @@
 /*Gives back the next available id*/
 int mk_new_ventaid(SQLHDBC dbc) {
   	int id;
-  	char consulta[1000] = "select max(order) from ventas";
+  	char consulta[1000] = "select max(V.order) from ventas as V";
 	SQLHSTMT stmt;
 	SQLRETURN ret;
-
   	SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
   	SQLPrepare(stmt, (SQLCHAR*) consulta, SQL_NTS);
   	SQLBindCol(stmt, 1, SQL_INTEGER, &id, sizeof(id), NULL);  
@@ -33,7 +32,6 @@ int exists_usr(SQLHDBC dbc, char* name) {
 
 	SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
 	sprintf(consulta, "SELECT scrname FROM fiduser WHERE scrname = '%s';", name);
-
 	SQLPrepare(stmt, (SQLCHAR*) consulta, SQL_NTS);
 	
 	SQLExecute(stmt);
@@ -57,7 +55,6 @@ int get_user_id(SQLHDBC dbc, char* scrname){
 
 	SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
 	sprintf(consulta, "SELECT user_id FROM fiduser WHERE scrname = '%s';", scrname);
-
 	SQLPrepare(stmt, (SQLCHAR*) consulta, SQL_NTS);
 	
 	SQLExecute(stmt);
@@ -84,8 +81,7 @@ int add_venta(SQLHDBC dbc, int id, char* scrname, char* date){
 		return -1;
 	}
 
-	sprintf(consulta, "Insert into ventas values (%d, %d, %s)",id, uid, date); 
-
+	sprintf(consulta, "Insert into ventas values (%d, %d, '%s')",id, uid, date); 
   	SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
   	SQLPrepare(stmt, (SQLCHAR*) consulta, SQL_NTS);
 	
@@ -99,7 +95,7 @@ void add_incluye(SQLHDBC dbc, int id, char* isbn){
 	char consulta[1000];
 	SQLHSTMT stmt;
 
-	sprintf(consulta, "Insert into incluye values (%s, %d)",isbn, id); 
+	sprintf(consulta, "Insert into incluye values ('%s', %d)",isbn, id); 
 
   	SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
   	SQLPrepare(stmt, (SQLCHAR*) consulta, SQL_NTS);
@@ -129,7 +125,7 @@ int main(int argc, char* argv[]){
 	    return EXIT_FAILURE;
 	}
 
- 	if(exists_usr(dbc, argv[2]) != 0){
+ 	if(exists_usr(dbc, argv[1]) != 0){
  		ret = odbc_disconnect(env, dbc);
 		if (!SQL_SUCCEEDED(ret)) {
 			printf("Error disconnecting.\n");
@@ -140,8 +136,8 @@ int main(int argc, char* argv[]){
 
  	id = mk_new_ventaid(dbc);
 
- 	if(add_venta(dbc, id, argv[2], argv[3]) == -1){
- 		/* DISCONNECT */
+ 	if(add_venta(dbc, id, argv[1], argv[2]) == -1){
+ 	    /* DISCONNECT */
 	    ret = odbc_disconnect(env, dbc);
 	    if (!SQL_SUCCEEDED(ret)) {
 	        return EXIT_FAILURE;
@@ -150,7 +146,7 @@ int main(int argc, char* argv[]){
 	    return EXIT_FAILURE;
  	}
 
- 	for(i = 4; i < argc; i++){
+ 	for(i = 3; i < argc; i++){
  		add_incluye(dbc, id, argv[i]);
  	}
 
