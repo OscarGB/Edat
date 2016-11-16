@@ -30,7 +30,7 @@ void add_offer(SQLHDBC dbc, int id, char* from, char* to, char* discount){
 	char consulta[1000];
 	SQLHSTMT stmt;
 	
-	sprintf(consulta, "Insert into XXXXXXXX values (%d, '%s', '%s', %s)", id, from, to, discount); 
+	sprintf(consulta, "Insert into oferta values (%d, '%s', '%s', %s)", id, from, to, discount); 
 
   	SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
  	SQLPrepare(stmt, (SQLCHAR*) consulta, SQL_NTS);
@@ -45,7 +45,7 @@ void add_offer_isbn(SQLHDBC dbc, int id, char* isbn){
 	char consulta[1000];
 	SQLHSTMT stmt;
 	
-	sprintf(consulta, "Insert into XXXXXXX values (%d, '%s')", id, isbn); 
+	sprintf(consulta, "Insert into aplicado values (%d, '%s')", id, isbn); 
 
   	SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
  	SQLPrepare(stmt, (SQLCHAR*) consulta, SQL_NTS);
