@@ -23,26 +23,27 @@ INSERT INTO fiduser SELECT id, scrname, nombre, joined, FALSE,ccardno FROM tmpus
 -----------------------------
 
 -----------------------------
-Rellenar la tabla Autor
-INSERT INTO "Autor" SELECT distinct(autor) FROM tmplibros
+Rellenar la tabla autor
+INSERT INTO autor SELECT distinct(autor) FROM tmplibros
 -----------------------------
 
 -----------------------------
 Rellenar la tabla edicion
 
 insert into edicion
-select *
-from	(select ttl, fmt, cast(substring(npg from ' #"%#" %' for '#') as integer), edt, pbd, idm, isbn
+select A1.*, A2.precio
+from	((select ttl, fmt, cast(substring(npg from ' #"%#" %' for '#') as integer), edt, pbd, idm, isbn
 	from (select min(titulo) as ttl, min(formato) as fmt, min(numpag) as npg, min(editorial) as edt, min(pubdate) as pbd, min(idioma) as idm, isbn
 	from tmplibros
 	group by isbn) as T1
-	where T1.npg similar to '%(0|1|2|3|4|5|6|7|8|9)%') as T2
+	where T1.npg similar to '%(0|1|2|3|4|5|6|7|8|9)%')
 	union
 	(select ttl, fmt, 100, edt, pbd, idm, isbn
 	from (select min(titulo) as ttl, min(formato) as fmt, min(numpag) as npg, min(editorial) as edt, min(pubdate) as pbd, min(idioma) as idm, isbn
 	from tmplibros
 	group by isbn) as T1
-	where not(T1.npg similar to '%(0|1|2|3|4|5|6|7|8|9)%'))
+	where not(T1.npg similar to '%(0|1|2|3|4|5|6|7|8|9)%'))) as A1, tmpprecio as A2
+where A1.isbn = A2.isbn
 
 -----------------------------
 
@@ -55,9 +56,9 @@ from tmplibros
 -----------------------------
 
 -----------------------------
-Rellenar la relación Escribe
+Rellenar la relación escribe
 
-insert into "Escribe"
+insert into escribe
 select titulo, autor
 from tmplibros
 -----------------------------
