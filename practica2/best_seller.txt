@@ -1,0 +1,6 @@
+SELECT T1.ttl, T1.sells
+FROM	(SELECT min(e.titulo) as ttl, count(i.isbn) as sells
+	FROM incluye as i, edicion as e
+	WHERE i.isbn = e.isbn
+	GROUP BY i.isbn) as T1
+ORDER BY sells desc
