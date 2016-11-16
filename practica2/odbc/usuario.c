@@ -30,7 +30,7 @@ void add_ccard(SQLHDBC dbc, char* ccardno, char* exp){
 	char consulta[1000];
 	SQLHSTMT stmt;
 	
-	sprintf(consulta, "Insert into ccard values (%s, %s)", exp, ccardno); 
+	sprintf(consulta, "Insert into ccard values ('%s', '%s')", exp, ccardno); 
 
   	SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
   	SQLPrepare(stmt, (SQLCHAR*) consulta, SQL_NTS);
@@ -45,7 +45,7 @@ void add_usr(SQLHDBC dbc, char* scrname, char* fullname, char* joindate, char* c
 	char consulta[1000];
 	SQLHSTMT stmt;
 	
-	sprintf(consulta, "Insert into fiduser values (%d, '%s', '%s', %s, FALSE, '%s')", mk_new_usrid(dbc), scrname, fullname, joindate, ccardno); 
+	sprintf(consulta, "Insert into fiduser values (%d, '%s', '%s', '%s', FALSE, '%s')", mk_new_usrid(dbc), scrname, fullname, joindate, ccardno); 
 
   	SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
  	SQLPrepare(stmt, (SQLCHAR*) consulta, SQL_NTS);
