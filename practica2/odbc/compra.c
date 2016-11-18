@@ -78,10 +78,11 @@ float get_precioini(SQLHDBC dbc, char* isbn){
 	SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
 	sprintf(consulta, "SELECT precio FROM edicion WHERE isbn = '%s';",isbn);
 	SQLPrepare(stmt, (SQLCHAR*) consulta, SQL_NTS);
+	printf("%s\n", consulta);
 	
 	SQLExecute(stmt);
 
-	SQLBindCol(stmt, 1, SQL_DOUBLE, &precio, sizeof(precio), NULL);
+	SQLBindCol(stmt, 1, SQL_REAL, &precio, sizeof(precio), NULL);
 
 	if (SQL_SUCCEEDED(ret = SQLFetch(stmt))) {
 		SQLFreeHandle(SQL_HANDLE_STMT, stmt);
@@ -98,12 +99,15 @@ int get_descuento(SQLHDBC dbc, char* isbn, char* date){
 	float descuento;
 
 	SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
-	sprintf(consulta, "SELECT O.descuento FROM aplicado as A, oferta as O WHERE A.isbn = '%s' AND O.ofer_id = A.ofer_id AND O.inicio < '%s' AND O.fin > '%s'",isbn, date, date);
+	sprintf(consulta, "SELECT O.descuento FROM aplicado as A, oferta as O WHERE A.isbn = '%s' AND O.oferta_id = A.oferta_id AND O.inicio < '%s' AND O.fin > '%s'",isbn, date, date);
+	
+	printf("%s\n", consulta);
+	
 	SQLPrepare(stmt, (SQLCHAR*) consulta, SQL_NTS);
 	
 	SQLExecute(stmt);
 
-	SQLBindCol(stmt, 1, SQL_INTEGER, &descuento, sizeof(descuento), NULL);
+	SQLBindCol(stmt, 1, SQL_REAL, &descuento, sizeof(descuento), NULL);
 
 	if (SQL_SUCCEEDED(ret = SQLFetch(stmt))) {
 		SQLFreeHandle(SQL_HANDLE_STMT, stmt);
@@ -116,11 +120,21 @@ int get_descuento(SQLHDBC dbc, char* isbn, char* date){
 float get_precio(SQLHDBC dbc, char* isbn, char* date){
 	int descuento;
 	float precioini;
+	float preciofinal;
 
 	descuento = get_descuento(dbc, isbn, date);
 	precioini = get_precioini(dbc, isbn);
+	descuento += 10;
+	
+	preciofinal = (float) precioini - (precioini * (descuento / 100));
 
-	return (float) precioini * (descuento / 100);
+	if(preciofinal < 0){
+		preciofinal = 0;
+	}
+
+	printf("precio: %f, descuento: %d, precio final: %f\n", precioini, descuento,  (float) precioini - (precioini * (descuento / 100)));
+	
+	return (float) precioini - (precioini * (descuento / 100));
 	
 }
 
@@ -154,6 +168,7 @@ void add_incluye(SQLHDBC dbc, int id, char* isbn, char* date){
 	precio = get_precio(dbc, isbn, date);
 
 	sprintf(consulta, "Insert into incluye values ('%s', %d, %f)",isbn, id, precio); 
+	printf("%s\n", consulta);
 
   	SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
   	SQLPrepare(stmt, (SQLCHAR*) consulta, SQL_NTS);

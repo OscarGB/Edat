@@ -8,7 +8,7 @@
 /*Gives back the next available id*/
 int mk_new_offerid(SQLHDBC dbc) {
   	int id;
-  	char consulta[1000] = "select max(offerta_id) from oferta";
+  	char consulta[1000] = "select max(oferta_id) from oferta";
 	SQLHSTMT stmt;
 	SQLRETURN ret;
 
@@ -30,7 +30,7 @@ void add_offer(SQLHDBC dbc, int id, char* from, char* to, char* discount){
 	char consulta[1000];
 	SQLHSTMT stmt;
 	
-	sprintf(consulta, "Insert into oferta values (%d, '%s', '%s', %s)", id, from, to, discount); 
+	sprintf(consulta, "Insert into oferta values (%d, %s, '%s', '%s');", id, discount, from, to); 
 
   	SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
  	SQLPrepare(stmt, (SQLCHAR*) consulta, SQL_NTS);
@@ -45,7 +45,8 @@ void add_offer_isbn(SQLHDBC dbc, int id, char* isbn){
 	char consulta[1000];
 	SQLHSTMT stmt;
 	
-	sprintf(consulta, "Insert into aplicado values (%d, '%s')", id, isbn); 
+	sprintf(consulta, "Insert into aplicado values ('%s', %d)", isbn, id); 
+
 
   	SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
  	SQLPrepare(stmt, (SQLCHAR*) consulta, SQL_NTS);
