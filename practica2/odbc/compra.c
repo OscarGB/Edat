@@ -5,7 +5,7 @@
 #include <sqlext.h>
 #include "odbc.h"
 
-/*Gives back the next available id*/
+/*Devuelve el siguiente id disponible*/
 int mk_new_ventaid(SQLHDBC dbc) {
   	int id;
   	char consulta[1000] = "select max(V.order) from ventas as V";
@@ -25,6 +25,7 @@ int mk_new_ventaid(SQLHDBC dbc) {
   	}
 }
 
+/*Comprueba si un usuario existe o no*/
 int exists_usr(SQLHDBC dbc, char* name) {
 	char consulta[1000];
 	SQLHSTMT stmt;
@@ -47,6 +48,7 @@ int exists_usr(SQLHDBC dbc, char* name) {
 	}
 }
 
+/*Devuelve el id del usuario*/
 int get_user_id(SQLHDBC dbc, char* scrname){
 	char consulta[1000];
 	SQLHSTMT stmt;

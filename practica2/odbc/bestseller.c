@@ -5,6 +5,7 @@
 #include <sqlext.h>
 #include "odbc.h"
 
+/*Función que realiza el proceso de consulta e impresión de los libros más vendidos*/
 int get_best_seller(SQLHDBC dbc, int n){
 	char consulta[1000];
 	SQLHSTMT stmt;
@@ -14,6 +15,7 @@ int get_best_seller(SQLHDBC dbc, int n){
 	int i;
 
 	SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
+	/*Consulta a realizar*/
 	sprintf(consulta, "SELECT T1.ttl, T1.sells FROM	(SELECT min(e.titulo) as ttl, count(i.isbn) as sells FROM incluye as i, edicion as e 		WHERE i.isbn = e.isbn GROUP BY i.isbn) as T1 ORDER BY sells desc");
 	SQLPrepare(stmt, (SQLCHAR*) consulta, SQL_NTS);
 	
@@ -21,7 +23,7 @@ int get_best_seller(SQLHDBC dbc, int n){
 
 	SQLBindCol(stmt, 1, SQL_CHAR, title, sizeof(title), NULL);
 	SQLBindCol(stmt, 2, SQL_INTEGER, &sells, sizeof(sells), NULL);
-
+	/*Bucle para imprimir los más vendidos*/
 	for(i = 0; i < n; i ++){
 		if (SQL_SUCCEEDED(ret = SQLFetch(stmt))) {
 			printf("Best seller numero %d: %s (vendido %d veces)\n", i+1, title, sells);
@@ -51,6 +53,7 @@ int main(int argc, char* argv[]){
 	    return EXIT_FAILURE;
 	}
 
+	/*Llamada a la función para imprimir*/
 	if(get_best_seller(dbc, n) != 0){
 		ret = odbc_disconnect(env, dbc);
 		if (!SQL_SUCCEEDED(ret)) {
