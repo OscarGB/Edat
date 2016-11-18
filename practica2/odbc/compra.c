@@ -78,7 +78,6 @@ float get_precioini(SQLHDBC dbc, char* isbn){
 	SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
 	sprintf(consulta, "SELECT precio FROM edicion WHERE isbn = '%s';",isbn);
 	SQLPrepare(stmt, (SQLCHAR*) consulta, SQL_NTS);
-	printf("%s\n", consulta);
 	
 	SQLExecute(stmt);
 
@@ -100,8 +99,6 @@ int get_descuento(SQLHDBC dbc, char* isbn, char* date){
 
 	SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
 	sprintf(consulta, "SELECT O.descuento FROM aplicado as A, oferta as O WHERE A.isbn = '%s' AND O.oferta_id = A.oferta_id AND O.inicio < '%s' AND O.fin > '%s'",isbn, date, date);
-	
-	printf("%s\n", consulta);
 	
 	SQLPrepare(stmt, (SQLCHAR*) consulta, SQL_NTS);
 	
@@ -126,15 +123,15 @@ float get_precio(SQLHDBC dbc, char* isbn, char* date){
 	precioini = get_precioini(dbc, isbn);
 	descuento += 10;
 	
-	preciofinal = (float) precioini - (precioini * (descuento / 100));
+	preciofinal = (float) (precioini * ((100 - (float)descuento) / 100));
 
 	if(preciofinal < 0){
 		preciofinal = 0;
 	}
 
-	printf("precio: %f, descuento: %d, precio final: %f\n", precioini, descuento,  (float) precioini - (precioini * (descuento / 100)));
+	printf("El libro con ISBN = %s cuesta %.2f€ con una oferta del %d%%, precio final %.2f:\n", isbn, precioini, descuento, preciofinal);
 	
-	return (float) precioini - (precioini * (descuento / 100));
+	return preciofinal;
 	
 }
 
@@ -160,7 +157,7 @@ int add_venta(SQLHDBC dbc, int id, char* scrname, char* date){
 	return 0;
 }
 
-void add_incluye(SQLHDBC dbc, int id, char* isbn, char* date){
+float add_incluye(SQLHDBC dbc, int id, char* isbn, char* date){
 	char consulta[1000];
 	SQLHSTMT stmt;
 	float precio;
@@ -168,7 +165,6 @@ void add_incluye(SQLHDBC dbc, int id, char* isbn, char* date){
 	precio = get_precio(dbc, isbn, date);
 
 	sprintf(consulta, "Insert into incluye values ('%s', %d, %f)",isbn, id, precio); 
-	printf("%s\n", consulta);
 
   	SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
   	SQLPrepare(stmt, (SQLCHAR*) consulta, SQL_NTS);
@@ -176,7 +172,7 @@ void add_incluye(SQLHDBC dbc, int id, char* isbn, char* date){
 	SQLExecute(stmt);
 
 	SQLFreeHandle(SQL_HANDLE_STMT, stmt);
-	return;
+	return precio;
 }
 
 int main(int argc, char* argv[]){
@@ -185,6 +181,7 @@ int main(int argc, char* argv[]){
   	SQLRETURN ret; /* ODBC API return status */
   	int id;
   	int i;
+	float preciototal = 0;
  	
  	if(argc < 4){
  		printf("Please use the format:\n./compra <Scrname> <Date(YYYY-MM-DD)> <ISBNS>\n");
@@ -220,8 +217,10 @@ int main(int argc, char* argv[]){
  	}
 
  	for(i = 3; i < argc; i++){
- 		add_incluye(dbc, id, argv[i], argv[2]);
+ 		preciototal += add_incluye(dbc, id, argv[i], argv[2]);
  	}
+
+	printf("La compra tiene un precio total de %.2f€\n", preciototal);
 
 
  	/* DISCONNECT */
