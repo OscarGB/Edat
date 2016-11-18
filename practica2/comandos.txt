@@ -82,6 +82,9 @@ group by pid
 Rellenar la relación incluye
 
 insert into incluye
-select isbn, pid
-from tmpventas
+select v.isbn, v.pid, (e.precio * 0.9) as precio
+from tmpventas as v, edicion as e
+where v.isbn = e.isbn
+
+#Todos los usuarios recogidos en el fichero de ventas están fidelizados (uid != 0), por lo que aplicamos el descuento del 10% a todas las ventas de la tabla incluye
 -----------------------------
