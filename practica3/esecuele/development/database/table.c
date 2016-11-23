@@ -5,6 +5,10 @@
 #include "../type/type.h"
 
 struct table_ {
+
+	/*int n_cols;
+	type_t* tipos;
+	record_t* registros;*/
   /* To be implemented */
 };
 
