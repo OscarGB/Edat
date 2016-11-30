@@ -4,4 +4,4 @@ offset.c
 limit.c
 count.c
 union.c
-type.c
+*type.c
