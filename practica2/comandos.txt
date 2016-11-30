@@ -1,0 +1,90 @@
+chmod 777 EDAT EDAT/practica2 EDAT/practica2/libreria_buena
+----------------------------
+Rellenando tmplibros y tmpuser
+COPY tmplibros from '/home/alumnos/e340546/Desktop/EDAT/practica2/libreria_buena/LIBROS_FINAL.txt' WITH DELIMITER '	' ENCODING 'ISO-8859-1'
+COPY tmpuser from '/home/alumnos/e340546/Desktop/EDAT/practica2/libreria_buena/usuarios.txt' WITH DELIMITER '	' ENCODING 'ISO-8859-1'
+----------------------------
+
+-----------------------------
+Para rellenar la tabla de precios
+COPY tmpprecio2 from '/home/alumnos/e340546/Desktop/EDAT/practica2/libreria_buena/isbns_precios.txt' WITH DELIMITER '	' ENCODING 'ISO-8859-1' CSV FORCE NOT NULL precio
+update tmpprecio2 set precio=0 where precio = ''
+INSERT INTO tmpprecio (select isbn, cast(precio as double precision) from tmpprecio2 )
+-----------------------------
+
+-----------------------------
+Rellenar la tabla de ccard
+INSERT INTO ccard SELECT exp, ccardno FROM tmpuser
+-----------------------------
+
+-----------------------------
+Rellenar la tabla de fiduser
+INSERT INTO fiduser SELECT id, scrname, nombre, joined, FALSE,ccardno FROM tmpuser
+-----------------------------
+
+-----------------------------
+Rellenar la tabla autor
+INSERT INTO autor SELECT distinct(autor) FROM tmplibros
+-----------------------------
+
+-----------------------------
+Rellenar la tabla edicion
+
+insert into edicion
+select A1.*, A2.precio
+from	((select ttl, fmt, cast(substring(npg from ' #"%#" %' for '#') as integer), edt, pbd, idm, isbn
+	from (select min(titulo) as ttl, min(formato) as fmt, min(numpag) as npg, min(editorial) as edt, min(pubdate) as pbd, min(idioma) as idm, isbn
+	from tmplibros
+	group by isbn) as T1
+	where T1.npg similar to '%(0|1|2|3|4|5|6|7|8|9)%')
+	union
+	(select ttl, fmt, 100, edt, pbd, idm, isbn
+	from (select min(titulo) as ttl, min(formato) as fmt, min(numpag) as npg, min(editorial) as edt, min(pubdate) as pbd, min(idioma) as idm, isbn
+	from tmplibros
+	group by isbn) as T1
+	where not(T1.npg similar to '%(0|1|2|3|4|5|6|7|8|9)%'))) as A1, tmpprecio as A2
+where A1.isbn = A2.isbn
+
+-----------------------------
+
+-----------------------------
+Rellenar la tabla libro
+
+insert into libro
+select distinct(titulo)
+from tmplibros
+-----------------------------
+
+-----------------------------
+Rellenar la relación escribe
+
+insert into escribe
+select titulo, autor
+from tmplibros
+-----------------------------
+
+-----------------------------
+Rellenar la tabla tmpventas
+
+COPY tmpventas from '/home/alumnos/e340546/Desktop/EDAT/practica2/libreria_buena/ventas.txt' WITH DELIMITER '	' ENCODING 'ISO-8859-1'
+-----------------------------
+
+-----------------------------
+Rellenar la tabla ventas
+
+insert into ventas
+select pid, min(uid), min(fecha)
+from tmpventas
+group by pid
+-----------------------------
+
+-----------------------------
+Rellenar la relación incluye
+
+insert into incluye
+select v.isbn, v.pid, (e.precio * 0.9) as precio
+from tmpventas as v, edicion as e
+where v.isbn = e.isbn
+
+#Todos los usuarios recogidos en el fichero de ventas están fidelizados (uid != 0), por lo que aplicamos el descuento del 10% a todas las ventas de la tabla incluye
+-----------------------------

@@ -1,0 +1,231 @@
+Creamos las tablas de nuestra base de datos
+
+CREATE TABLE autor
+(
+  autor_name character varying(300) NOT NULL,
+  CONSTRAINT autor_name PRIMARY KEY (autor_name)
+)
+
+CREATE TABLE ccard
+(
+  exp date,
+  ccardno character varying(50) NOT NULL,
+  CONSTRAINT ccardno PRIMARY KEY (ccardno)
+)
+
+CREATE TABLE libro
+(
+  titulo character varying(300) NOT NULL,
+  CONSTRAINT titulo PRIMARY KEY (titulo)
+)
+
+CREATE TABLE fiduser
+(
+  user_id bigint NOT NULL,
+  scrname character varying(30),
+  fullname character varying(60),
+  joined date,
+  borrado boolean DEFAULT false,
+  ccardno character varying(50),
+  CONSTRAINT user_id PRIMARY KEY (user_id),
+  CONSTRAINT ccardno FOREIGN KEY (ccardno)
+      REFERENCES ccard (ccardno) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION
+)
+
+CREATE TABLE escribe
+(
+  titulo character varying(300),
+  autor_name character varying(300),
+  CONSTRAINT atr_name FOREIGN KEY (autor_name)
+      REFERENCES autor (autor_name) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT ttl FOREIGN KEY (titulo)
+      REFERENCES libro (titulo) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION
+)
+
+CREATE TABLE ventas
+(
+  "order" integer NOT NULL,
+  uid integer NOT NULL,
+  fecha date,
+  CONSTRAINT vid PRIMARY KEY ("order"),
+  CONSTRAINT uid FOREIGN KEY (uid)
+      REFERENCES fiduser (user_id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION
+)
+
+CREATE TABLE oferta
+(
+  oferta_id integer NOT NULL,
+  descuento integer,
+  inicio date,
+  fin date,
+  CONSTRAINT oferta_id PRIMARY KEY (oferta_id)
+)
+
+CREATE TABLE edicion
+(
+  titulo character varying(300),
+  formato character varying(300),
+  numpag character varying(300),
+  editorial character varying(300),
+  pubdate date,
+  idioma character varying(300),
+  isbn character varying(300) NOT NULL,
+  precio double precision,
+  CONSTRAINT isbn PRIMARY KEY (isbn),
+  CONSTRAINT titulo FOREIGN KEY (titulo)
+      REFERENCES libro (titulo) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION
+)
+
+CREATE TABLE aplicado
+(
+  isbn character varying(300),
+  oferta_id integer,
+  CONSTRAINT isbn FOREIGN KEY (isbn)
+      REFERENCES edicion (isbn) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT oferta_id FOREIGN KEY (oferta_id)
+      REFERENCES oferta (oferta_id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION
+)
+
+CREATE TABLE incluye
+(
+  isbn character varying(300),
+  "order" integer,
+  precio double precision,
+  CONSTRAINT eisbn FOREIGN KEY (isbn)
+      REFERENCES edicion (isbn) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT vorder FOREIGN KEY ("order")
+      REFERENCES ventas ("order") MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION
+)
+
+--------------------------------------
+Creamos las tablas temporales
+
+CREATE TABLE tmplibros
+(
+  autor character varying(300),
+  titulo character varying(300),
+  formato character varying(300),
+  numpag character varying(300),
+  editorial character varying(300),
+  pubdate date,
+  idioma character varying(300),
+  isbn character varying(300)
+)
+
+CREATE TABLE tmpprecio
+(
+  isbn character varying(300),
+  precio double precision DEFAULT 0.00
+)
+
+CREATE TABLE tmpprecio2
+(
+  isbn character varying(300),
+  precio character varying(300)
+)
+
+CREATE TABLE tmpuser
+(
+  id bigint,
+  scrname character varying(30),
+  nombre character varying(60),
+  joined date,
+  ccardno character varying(20),
+  exp date
+)
+
+CREATE TABLE tmpventas
+(
+  pid integer,
+  uid bigint,
+  isbn character varying(300),
+  fecha date
+)
+
+-----------------------------------
+Las rellenamos
+
+COPY tmplibros from '/home/alumnos/e340546/EDAT/practica2/libreria_buena/LIBROS_FINAL.txt' WITH DELIMITER '	' ENCODING 'ISO-8859-1'
+
+COPY tmpuser from '/home/alumnos/e340546/EDAT/practica2/libreria_buena/usuarios.txt' WITH DELIMITER '	' ENCODING 'ISO-8859-1'
+
+COPY tmpventas from '/home/alumnos/e340546/Desktop/EDAT/practica2/libreria_buena/ventas.txt' WITH DELIMITER '	' ENCODING 'ISO-8859-1'
+
+-----------------------------------
+Para rellenar las temporales de precio y convertir a integer, rellenando los espacios con ceros
+
+COPY tmpprecio2 from '/home/alumnos/e340546/EDAT/practica2/libreria_buena/isbns_precios.txt' WITH DELIMITER '	' ENCODING 'ISO-8859-1' CSV 
+FORCE NOT NULL precio
+update tmpprecio2 set precio=0 where precio = ''
+INSERT INTO tmpprecio (select isbn, cast(precio as double precision) from tmpprecio2 )
+
+-----------------------------------
+Rellenar la tabla de ccard
+INSERT INTO ccard SELECT exp, ccardno FROM tmpuser
+
+-----------------------------
+Rellenar la tabla de fiduser
+INSERT INTO fiduser SELECT id, scrname, nombre, joined, FALSE,ccardno FROM tmpuser
+
+-----------------------------
+Rellenar la tabla autor
+INSERT INTO autor SELECT distinct(autor) FROM tmplibros
+
+-----------------------------
+Rellenar la tabla libro
+
+insert into libro
+select distinct(titulo)
+from tmplibros
+
+-----------------------------
+Rellenar la relación escribe
+
+insert into escribe
+select titulo, autor
+from tmplibros
+
+-----------------------------
+Rellenar la tabla ventas
+
+insert into ventas
+select pid, min(uid), min(fecha)
+from tmpventas
+group by pid
+
+-----------------------------
+Rellenar la tabla edicion
+
+insert into edicion
+select distinct A1.*, A2.precio
+from	((select ttl, fmt, cast(substring(npg from ' #"%#" %' for '#') as integer), edt, pbd, idm, isbn
+	from (select min(titulo) as ttl, min(formato) as fmt, min(numpag) as npg, min(editorial) as edt, min(pubdate) as pbd, min(idioma) as idm, isbn
+	from tmplibros
+	group by isbn) as T1
+	where T1.npg similar to '%(0|1|2|3|4|5|6|7|8|9)%')
+	union
+	(select ttl, fmt, 100, edt, pbd, idm, isbn
+	from (select min(titulo) as ttl, min(formato) as fmt, min(numpag) as npg, min(editorial) as edt, min(pubdate) as pbd, min(idioma) as idm, isbn
+	from tmplibros
+	group by isbn) as T1
+	where not(T1.npg similar to '%(0|1|2|3|4|5|6|7|8|9)%'))) as A1, tmpprecio as A2
+where A1.isbn = A2.isbn
+
+-----------------------------
+Rellenar la relación incluye
+
+insert into incluye
+select v.isbn, v.pid, (e.precio * 0.9) as precio
+from tmpventas as v, edicion as e
+where v.isbn = e.isbn
+
+

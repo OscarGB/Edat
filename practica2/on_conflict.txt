@@ -1,0 +1,6 @@
+INSERT INTO edicion(titulo, formato, numpag, editorial, pubdate, idioma, isbn, precio)
+SELECT L.titulo, L.formato, L.numpag, L.editorial, L.pubdate, L.idioma, L.isbn, P.precio
+FROM tmplibros AS L, tmpprecio AS P
+ON CONFLICT DO NOTHING
+
+version 9.5 postgre
