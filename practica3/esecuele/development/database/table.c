@@ -46,26 +46,26 @@ table_t* table_open(char* path) {
   if(!table) return NULL;
 
   table->file = fopen(path, "r+");
-  if(!f){
+  if(!table->file){
     free(table);
     return NULL;
   }
 
 
-  fread(&(table->ncols), sizeof(int), 1, f);
+  fread(&(table->ncols), sizeof(int), 1, table->file);
 
   table->types = (type_t*)malloc(sizeof(type_t)*table->ncols);
   if(!table->types){
-    fclose(f);
+    fclose(table->file);
     free(table);
     return NULL;
   }
 
-  fread(table->types, sizeof(type_t), table->ncols, f);
+  fread(table->types, sizeof(type_t), table->ncols, table->file);
 
-  table->first_pos = ftell(f);
-  fseek(f, 0, SEEK_END);
-  table->last_pos = ftell(f);
+  table->first_pos = ftell(table->file);
+  fseek(table->file, 0, SEEK_END);
+  table->last_pos = ftell(table->file);
 
   return table;
 
@@ -108,7 +108,7 @@ type_t* table_types(table_t* table) {
 long table_first_pos(table_t* table) {
 
   if(!table){
-    return NULL;
+    return -1;
   }
 
   return table->first_pos;
@@ -118,7 +118,7 @@ long table_first_pos(table_t* table) {
 long table_last_pos(table_t* table) {
 
   if(!table){
-    return NULL;
+    return -1;
   }
 
   return table->last_pos;
@@ -127,25 +127,25 @@ long table_last_pos(table_t* table) {
 
 record_t* table_read_record(table_t* table, long pos) {
 
-  if(!table || pos >= table->last_pos || pos < 0){
-    return NULL;
-  }
-
   record_t* record = NULL;
   void** values;
   int size, i;
+
+  if(!table || pos >= table->last_pos || pos < 0){
+    return NULL;
+  }
 
   values = (void **)malloc(sizeof(void*)*table->ncols);
   if(!values){
     return NULL;
   }
 
-  fseek(f, pos, SEEK_SET);
+  fseek(table->file, pos, SEEK_SET);
 
   for(i = 0; i < table->ncols; i++){
-    fread(&size, sizeof(type_t), 1, f);
+    fread(&size, sizeof(type_t), 1, table->file);
     values[i] = (void *)malloc(size);
-    fread(values[i], size, 1, f);
+    fread(values[i], size, 1, table->file);
   }
 
   record = record_create(values, table->ncols, ftell(table->file));
@@ -163,7 +163,7 @@ record_t* table_read_record(table_t* table, long pos) {
 
 void table_insert_record(table_t* table, void** values) {
   
-  int size;
+  int size, i;
 
   if(!table || !values){
     return;
@@ -173,11 +173,11 @@ void table_insert_record(table_t* table, void** values) {
 
   for(i = 0; i < table->ncols; i++){
     size = value_length(table->types[i], values[i]);
-    fwrite(&size, sizeof(int), 1, f);
-    fwrite(values[i], size, 1, f);
+    fwrite(&size, sizeof(int), 1, table->file);
+    fwrite(values[i], size, 1, table->file);
   }
 
-  table->last_pos = ftell(f);
+  table->last_pos = ftell(table->file);
   return;
 
 }

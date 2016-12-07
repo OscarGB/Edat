@@ -1,7 +1,11 @@
-table.c
-record.c
+*table.c
+*record.c
 offset.c
 limit.c
 count.c
 union.c
 *type.c
+
+
+make esecuele (NUESTRO)
+make wvs (SUYO)

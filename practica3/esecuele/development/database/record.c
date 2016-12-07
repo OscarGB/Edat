@@ -10,7 +10,7 @@ struct record_ {
 record_t* record_create(void** values, int ncols, long next) {
   record_t* record = NULL;
 
-  if(!values || ncols <= 0 || next <= 0) return NULL:
+  if(!values || ncols <= 0 || next <= 0) return NULL;
 
   record = (record_t*)malloc(sizeof(record_t));
   if(!record) return NULL;
