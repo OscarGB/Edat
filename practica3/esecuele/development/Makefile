@@ -168,7 +168,7 @@ table.o:	$(DBDIR)/table.c $(DBDIR)/table.h
 
 type.o:	$(TYPEDIR)/type.c $(TYPEDIR)/type.o
 	$(CC) $(TYPEDIR)/type.c
-
+		
 #
 # main esecuele creation (with the table and record you made)
 #
