@@ -45,5 +45,6 @@ void record_free(record_t* record) {
   	}
   }
 
+  free(record->values);
   free(record);
 }
