@@ -82,6 +82,7 @@ void operation_union_close(void* vargs) {
     operation_close(args->suboperation1);
     operation_close(args->suboperation2);
     free(args);
+    return;
 }
 
 operation_t*

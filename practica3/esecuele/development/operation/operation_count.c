@@ -24,7 +24,7 @@ operation_count_reset(void* vargs) {
 int operation_count_next(void* vargs) {
 	operation_count_args_t* args = NULL;
 
-	if(!vargs) return -1;
+	if(!vargs) return 0;
 
 	args = vargs;
 	/*Si es mayor es que ya ha sido usado*/
