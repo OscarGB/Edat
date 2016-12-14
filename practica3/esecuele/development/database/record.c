@@ -39,12 +39,12 @@ long record_next(record_t* record) {
 void record_free(record_t* record) {
   int i;
 
-  for(i = 0; i < record->ncols; i++){
+  /*for(i = 0; i < record->ncols; i++){
   	if(record->values[i] != NULL){
   		free(record->values[i]);
   	}
-  }
+  }*/
 
-  free(record->values);
+  /*free(record->values);*/
   free(record);
 }

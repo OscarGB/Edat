@@ -64,7 +64,7 @@ table_t* table_open(char* path) {
   fread(table->types, sizeof(type_t), table->ncols, table->file);
 
   table->first_pos = ftell(table->file);
-  /*fseek(table->file, 0, SEEK_END);*/
+  fseek(table->file, 0, SEEK_END);
   table->last_pos = ftell(table->file);
 
   return table;
@@ -88,7 +88,7 @@ void table_close(table_t* table) {
 int table_ncols(table_t* table) {
 
   if(!table){
-    return -1;
+    return 0;
   }
 
   return table->ncols;
@@ -121,8 +121,6 @@ long table_last_pos(table_t* table) {
     return -1;
   }
 
-  fseek(table->file, 0, SEEK_END);
-  table->last_pos = ftell(table->file);
   return table->last_pos;
 
 }
@@ -131,8 +129,7 @@ record_t* table_read_record(table_t* table, long pos) {
 
   record_t* record = NULL;
   void** values;
-  int i;
-  size_t size;
+  int size, i;
 
   if(!table || pos >= table->last_pos || pos < 0){
     return NULL;
@@ -166,18 +163,17 @@ record_t* table_read_record(table_t* table, long pos) {
 
 void table_insert_record(table_t* table, void** values) {
   
-  int i;
-  size_t size;
+  int size, i;
 
   if(!table || !values){
     return;
   }
 
-  fseek(table->file, 0L, SEEK_END);
+  fseek(table->file, table->last_pos, SEEK_SET);
 
   for(i = 0; i < table->ncols; i++){
     size = value_length(table->types[i], values[i]);
-    fwrite(&size, sizeof(size_t), 1, table->file);
+    fwrite(&size, sizeof(int), 1, table->file);
     fwrite(values[i], size, 1, table->file);
   }
 

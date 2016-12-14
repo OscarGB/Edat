@@ -1,6 +1,6 @@
 #!/bin/bash
 
-COMMAND="./esecuele"
+COMMAND="valgrind --leak-check=full ./esecuele"
 
 rm -rf bank_db
 
