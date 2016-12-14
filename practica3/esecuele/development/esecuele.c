@@ -8,7 +8,7 @@
 #include "parser/parser.h"
 #include "database/database.h"
 
-#define MAX_LEN_STATEMENT 1024
+#define MAX_LEN_STATEMENT 4000
 
 void createdb(char* name) {
     database_create(name);

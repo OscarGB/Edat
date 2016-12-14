@@ -1,0 +1,7 @@
+Lista de libros comprados por jack:
+
+Select L.*
+From Libros as L, usuarios as U, ventas as V
+Where U.name = 'jack' AND U.id = V.id AND L.isbn = V.isbn
+
+
