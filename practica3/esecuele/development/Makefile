@@ -176,12 +176,14 @@ type.o:	$(TYPEDIR)/type.c $(TYPEDIR)/type.o
 esecuele:	$(MAINOBJS)
 	$(LNK) -o ../install/esecuele $(MAINOBJS)
 	cp bank.bash ../install
+	cp libreria.bash ../install
 	cp -r example_files ../install/
 
 
 wvs:	$(ALTOBJS)
 	$(LNK) -o ../install/esecuele $(ALTOBJS)
 	cp bank.bash ../install
+	cp libreria.bash ../install
 	cp -r example_files ../install/
 
 
