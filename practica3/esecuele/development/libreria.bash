@@ -1,6 +1,6 @@
 #!/bin/bash
 
-COMMAND="valgrind --leak-check=full ./esecuele"
+COMMAND="./esecuele"
 
 rm -rf libreria_db
 
