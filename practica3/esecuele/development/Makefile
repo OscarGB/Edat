@@ -4,8 +4,8 @@
 # (C) Simone Santini, 2016
 #
 
-CC = gcc -c -std=c99
-LNK = gcc 
+CC = gcc -c -g -std=c99
+LNK = gcc -g
 
 SRC=.
 DBDIR=$(SRC)/database
